@@ -3,11 +3,13 @@ from email.mime.text import MIMEText
 from telegram import KeyboardButton, ReplyKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
-BOT_TOKEN = "توکن_ربات_از_BotFather"
-EMAIL_USER = "ایمیل_فرستنده@gmail.com"
-EMAIL_PASS = "AppPassword"
-EMAIL_TO   = "press.itengineering@gmail.com"
+# --- تنظیمات ---
+BOT_TOKEN = "8420831695:AAH5p-3iyYeb_IU7wCzobmBbXF4-9XsmprI"
+EMAIL_USER = "ایمیل_فرستنده@gmail.com"  # جیمیل خودت برای ارسال ایمیل
+EMAIL_PASS = "AppPassword"               # پسورد اپ مخصوص جیمیل
+EMAIL_TO   = "press.itengineering@gmail.com"  # ایمیل مقصد
 
+# --- تابع ارسال ایمیل ---
 def send_email(subject, body):
     msg = MIMEText(body)
     msg["Subject"] = subject
@@ -17,19 +19,29 @@ def send_email(subject, body):
         server.login(EMAIL_USER, EMAIL_PASS)
         server.sendmail(EMAIL_USER, EMAIL_TO, msg.as_string())
 
+# --- استارت ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     button = KeyboardButton("📍 ارسال لوکیشن", request_location=True)
     reply_markup = ReplyKeyboardMarkup([[button]], resize_keyboard=True, one_time_keyboard=True)
-    await update.message.reply_text("سلام! لطفاً روی دکمه بزن و لوکیشن خودت رو بفرست:", reply_markup=reply_markup)
+    await update.message.reply_text(
+        "سلام! لطفاً روی دکمه بزن و لوکیشن خودت رو بفرست:", 
+        reply_markup=reply_markup
+    )
 
+# --- دریافت لوکیشن ---
 async def location_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     loc = update.message.location
     lat, lon = loc.latitude, loc.longitude
     gmap_link = f"https://www.google.com/maps?q={lat},{lon}"
-    text = f"📍 کاربر {update.message.from_user.first_name} لوکیشن فرستاد:\\n\\nLatitude: {lat}\\nLongitude: {lon}\\n\\n🔗 لینک روی نقشه:\\n{gmap_link}"
+    text = (
+        f"📍 کاربر {update.message.from_user.first_name} لوکیشن فرستاد:\n\n"
+        f"Latitude: {lat}\nLongitude: {lon}\n\n"
+        f"🔗 لینک روی نقشه:\n{gmap_link}"
+    )
     send_email("لوکیشن جدید از ربات تلگرام", text)
     await update.message.reply_text("✅ لوکیشن شما دریافت شد و به ایمیل ارسال شد.")
 
+# --- ران ربات ---
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
